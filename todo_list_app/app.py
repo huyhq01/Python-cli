@@ -9,7 +9,6 @@ def main():
     Functions Menu to run the todo list app.
     """
     TaskServices.create_table()  # đảm bảo database tạo nếu chưa có
-    TaskServices.update_list_task()
 
     while True:
         print("Chon chuc nang:")
@@ -51,11 +50,11 @@ def view_task():
             add_task()
         else: return
     else:
-        table_data = [[
+        table_data = [(
             i, 
             task.content, 
             task.deadline or 'Không có', 
-            "Đã xong" if task.status else "Chưa xong"]
+            "Đã xong" if task.status else "Chưa xong")
             for i,task in enumerate(response, start=1)
         ]
         headers = ["STT", "Nội dung", "Hạn chót", "Tiến độ"]
@@ -71,7 +70,6 @@ def add_task():
 
     # Thêm task mới vào cơ sở dữ liệu
     TaskServices.add_task(content, deadline)
-    TaskServices.update_list_task()
     
 def update_task():
     """
@@ -105,16 +103,30 @@ def update_task():
     # kiểm tra kết quả        
     result = TaskServices.update_task(list_ids[i], content_update, deadline_update, complete == 'y')
     if result['status']: print(result['message'])
-    else: print(f"❌ {result['message']}")
-
-    # Cập nhật db
-    TaskServices.update_list_task() 
+    else: print(f"{result['message']}")
     
 def delete_task():
     """
     Delete a todo item.
     """
-    # Xóa todo item khỏi danh sách
+    # kiểm tra trước khi xóa
+    list_ids = TaskServices.get_list_task_ids()
+    stt_input = input('Số thứ tự Task bạn muốn xóa: ')
+    
+    if not (stt_input.isdigit() and 1 <= (i:=int(stt_input)) <= len(list_ids)): # nếu số thứ tự task tồn tại
+        print('Số thứ tự không tồn tại. Quay lại menu nhá!')
+        return
+    # cho user xem lại task đang xóa
+    task = TaskServices.get_task_by_id(list_ids[i])
+    print('Nội dung:', task.content)
+    print('Hạn chót:', task.deadline or 'Không có')
+    print('Tiến độ:', 'Đã xong' if task.status else 'Chưa xong')
+
+    if input('Có phải muốn xóa task này không? y/n').lower().strip() == 'y':
+        # Xóa todo item
+        result = TaskServices.delete_task(list_ids[i])
+        if result['status']: print(result['message'])
+        else: print(f"{result['message']}")
 
 def get_content():
     while True:

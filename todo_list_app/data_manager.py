@@ -21,6 +21,7 @@ def create_table():
         )
     connect.commit() # lưu các thay đổi vào cơ sở dữ liệu
     connect.close() # đóng kết nối đến cơ sở dữ liệu 
+    update_list_task
 
 def add_task(content, deadline):
     cursor = None
@@ -34,6 +35,7 @@ def add_task(content, deadline):
     except sqlite3.Error as e:
         print(f"Rồi xong có lỗi: {e}")
     finally:
+        update_list_task()
         if cursor: cursor.close()
 
 def query_all_tasks():
@@ -75,16 +77,30 @@ def update_task(task_id, content=None, deadline=None, status=None):
             cursor = connect.cursor()
             cursor.execute(query, values)
             connect.commit() # lưu các thay đổi vào cơ sở dữ liệu
-            success = cursor.rowcount > 0 # xem số row đã cập nhật
+            success = cursor.rowcount > 0 # xem số row đã bị thao tác thay đổi
             message = f"{'Cập nhật thành công!' if success else 'Không tìm thấy task để cập nhật!'}"
             return {'status': success, 'message': message}
     except sqlite3.Error as e:
         return {'status': False, 'message': f"Rồi xong lỗi database: {e}"}
     finally:
+        update_list_task()
         if cursor: cursor.close()    
 
 def delete_task(task_id):
-    pass
+    cursor = None
+    try:
+        with connect_db() as connect:
+            cursor = connect.cursor()
+            cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+            connect.commit() # lưu các thay đổi vào cơ sở dữ liệu
+            success = cursor.rowcount > 0 # xem số row đã bị thao tác thay đổi
+            message = f"{'Xóa thành công!' if success else 'Không tìm thấy task để xóa!'}"
+            return {'status': success, 'message': message}
+    except sqlite3.Error as e:
+        return {'status': False, 'message': f"Rồi xong lỗi database: {e}"}
+    finally:
+        update_list_task()
+        if cursor: cursor.close()
 
 def update_list_task():
     global _task_cache
@@ -95,3 +111,6 @@ def get_all_tasks():
 
 def get_list_task_ids():
     return {i :task.id for i,task in enumerate(get_all_tasks(), start=1)}
+
+def get_task_by_id(task_id):
+    return next((task for task in _task_cache if task.id == task_id), None)
