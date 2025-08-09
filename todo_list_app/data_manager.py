@@ -52,7 +52,6 @@ def query_all_tasks():
 
 def update_task(task_id, content=None, deadline=None, status=None):
     cursor = None
-    success = False
     set_clauses = []
     values = []
     if content is not None: 
@@ -75,13 +74,14 @@ def update_task(task_id, content=None, deadline=None, status=None):
         with connect_db() as connect:
             cursor = connect.cursor()
             cursor.execute(query, values)
-            connect.commit()
-            success = cursor.rowcount > 0
+            connect.commit() # lưu các thay đổi vào cơ sở dữ liệu
+            success = cursor.rowcount > 0 # xem số row đã cập nhật
+            message = f"{'Cập nhật thành công!' if success else 'Không tìm thấy task để cập nhật!'}"
+            return {'status': success, 'message': message}
     except sqlite3.Error as e:
-        print(f"Rồi xong có lỗi: {e}")
+        return {'status': False, 'message': f"Rồi xong lỗi database: {e}"}
     finally:
-        if cursor: cursor.close()
-    return success
+        if cursor: cursor.close()    
 
 def delete_task(task_id):
     pass

@@ -101,9 +101,12 @@ def update_task():
         if complete in ('y','n'):
             break
         print("Nhập 'y' hoặc 'n' thôi")
-            
-    
-    TaskServices.update_task(list_ids[i], content_update, deadline_update, complete == 'y')
+
+    # kiểm tra kết quả        
+    result = TaskServices.update_task(list_ids[i], content_update, deadline_update, complete == 'y')
+    if result['status']: print(result['message'])
+    else: print(f"❌ {result['message']}")
+
     # Cập nhật db
     TaskServices.update_list_task() 
     
