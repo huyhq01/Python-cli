@@ -1,4 +1,4 @@
-import programs.todo_list_app.app as todo_app
+import todo_list_app.app as todo_app
 import sys
 
 def main():

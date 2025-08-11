@@ -1,5 +1,6 @@
+from datetime import date
 class Task:
-    def __init__ (self, id, content = "", deadline = None, status = False):
+    def __init__ (self, id: int, content: str = "", deadline: date | None = None, status: bool = False):
         self.id = id
         self.content = content
         self.deadline = deadline

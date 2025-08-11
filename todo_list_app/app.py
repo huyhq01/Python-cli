@@ -1,8 +1,8 @@
-from task import Task
 import data_manager as TaskServices
 import sys
-from datetime import datetime, date
+from datetime import date, datetime
 from tabulate import tabulate
+from task import Task
 
 def main():
     """
@@ -117,7 +117,10 @@ def delete_task():
         print('Số thứ tự không tồn tại. Quay lại menu nhá!')
         return
     # cho user xem lại task đang xóa
-    task = TaskServices.get_task_by_id(list_ids[i])
+    task: Task | None = TaskServices.get_task_by_id(list_ids[i])
+    if not task:
+        print('Không tìm thấy task để xóa. Thử lại xem!')
+        return
     print('Nội dung:', task.content)
     print('Hạn chót:', task.deadline or 'Không có')
     print('Tiến độ:', 'Đã xong' if task.status else 'Chưa xong')
@@ -136,7 +139,7 @@ def get_content():
         else:
             return content.strip()  # Trả về nội dung đã loại bỏ khoảng trắng đầu cuối
 
-def get_valid_date(is_update=False):
+def get_valid_date(is_update: bool=False) -> date | None:
     """
     Get a valid date input from the user.
     """

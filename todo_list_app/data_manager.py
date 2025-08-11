@@ -1,8 +1,14 @@
 import sqlite3
+from typing import TypedDict
 from task import Task
+from datetime import date
 
 DATABASE_NAME = "tasks.db"
 _task_cache: list[Task] = []
+
+class Response(TypedDict):
+    status: bool
+    message: str
 
 def connect_db():
     """Connect to the SQLite database."""
@@ -21,9 +27,9 @@ def create_table():
         )
     connect.commit() # lưu các thay đổi vào cơ sở dữ liệu
     connect.close() # đóng kết nối đến cơ sở dữ liệu 
-    update_list_task
+    update_list_task()
 
-def add_task(content, deadline):
+def add_task(content: str, deadline: date | None):
     cursor = None
     try:
         with connect_db() as connect:
@@ -40,6 +46,7 @@ def add_task(content, deadline):
 
 def query_all_tasks():
     rows = []
+    cursor = None
     try:
         with connect_db() as connect:
             cursor = connect.cursor()
@@ -52,10 +59,15 @@ def query_all_tasks():
     
     return rows
 
-def update_task(task_id, content=None, deadline=None, status=None):
+def update_task(
+        task_id: int, 
+        content: str | None = None, 
+        deadline: date|None = None, 
+        status: bool | None = None
+        ) -> Response:
     cursor = None
-    set_clauses = []
-    values = []
+    set_clauses: list[str] = []
+    values: list[str|date|bool|int] = []
     if content is not None: 
         set_clauses.append("content = ?")
         values.append(content)
@@ -67,7 +79,7 @@ def update_task(task_id, content=None, deadline=None, status=None):
         values.append(status)
     if not set_clauses:
         print("Không có gì để update!")
-        return False
+        return {'status': False, 'message': "Không có gì để update!"}
     
     values.append(task_id)
     query = f"UPDATE tasks SET {', '.join(set_clauses)} WHERE id = ?"
@@ -86,7 +98,7 @@ def update_task(task_id, content=None, deadline=None, status=None):
         update_list_task()
         if cursor: cursor.close()    
 
-def delete_task(task_id):
+def delete_task(task_id: int) -> Response :
     cursor = None
     try:
         with connect_db() as connect:
@@ -109,8 +121,8 @@ def update_list_task():
 def get_all_tasks():
     return _task_cache
 
-def get_list_task_ids():
+def get_list_task_ids() -> dict[int, int]:
     return {i :task.id for i,task in enumerate(get_all_tasks(), start=1)}
 
-def get_task_by_id(task_id):
+def get_task_by_id(task_id: int) -> Task | None:
     return next((task for task in _task_cache if task.id == task_id), None)
