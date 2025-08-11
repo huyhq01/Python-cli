@@ -53,7 +53,7 @@ def view_task():
         table_data = [(
             i, 
             task.content, 
-            task.deadline or 'Không có', 
+            convert_date(task.deadline) or 'Không có', 
             "Đã xong" if task.status else "Chưa xong")
             for i,task in enumerate(response, start=1)
         ]
@@ -66,7 +66,7 @@ def add_task():
     """
     content = get_content()
     deadline = get_valid_date()
-    print('Nội dung là: ', content, ' -- Thời gian là ', deadline or 'Null = Vô thời hạn')
+    print('Nội dung là:', content, '-- Thời gian là', deadline or 'Vô thời hạn')
 
     # Thêm task mới vào cơ sở dữ liệu
     TaskServices.add_task(content, deadline)
@@ -144,12 +144,12 @@ def get_valid_date(is_update: bool=False) -> date | None:
     Get a valid date input from the user.
     """
     while True:
-        match (input(f"Có {'đổi' if is_update else ''} hạn chót không fen? (y/n)").lower().strip()):
+        match (input(f"Có{' đổi' if is_update else ''} hạn chót không fen? (y/n)").lower().strip()):
             case 'n':
                 return None
             case 'y':
                 while True:
-                    date_str = input(f"Hạn chót {'' if is_update else 'nếu có'} (DD-MM-YYYY): ")
+                    date_str = input(f"Hạn chót{'' if is_update else ' nếu có'} (DD-MM-YYYY): ")
                     if not date_str:
                             print(f"Để trống xem như không {"đổi"if is_update else "có"} nhá.")
                             return None
@@ -159,6 +159,9 @@ def get_valid_date(is_update: bool=False) -> date | None:
                         print("Không được.Nhập đúng ngày DD-MM-YYYY và ngày có tồn tại.")
             case _:
                 print("Đừng có nghịch. Vui lòng nhập 'y' (yes) hoặc 'n' (no).")
+
+def convert_date(deadline: date | None) -> str | None:
+    return deadline.strftime("%d-%m-%Y") if deadline else None
 
 if __name__ == '__main__':
     main()
