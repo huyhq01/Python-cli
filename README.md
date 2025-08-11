@@ -29,4 +29,5 @@ pip install tabulate
 ```
 
 Giao diện menu
-<img width="591" height="390" alt="image" src="https://github.com/user-attachments/assets/c4adb1c5-7eca-46ff-becf-acacef1d275f" />
+
+<img width=50% alt="image" src="https://github.com/user-attachments/assets/c4adb1c5-7eca-46ff-becf-acacef1d275f" />
